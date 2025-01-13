@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Ingredient;
+use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,5 +27,10 @@ class RecipeFactory extends Factory
             'source' => fake()->url(),
             'image_url' => fake()->imageUrl(),
         ];
+    }
+
+    public function withIngredients($amount = 5): self
+    {
+        return $this->has(Ingredient::factory()->count($amount));
     }
 }
