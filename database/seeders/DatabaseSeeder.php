@@ -19,5 +19,9 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@example.com',
             ]);
         }
+
+        $this->call([
+            RecipeSeeder::class,
+        ]);
     }
 }
