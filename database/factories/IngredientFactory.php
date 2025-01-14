@@ -19,6 +19,7 @@ class IngredientFactory extends Factory
     {
         return [
             'recipe_id' => Recipe::factory(),
+            'name' => fake()->sentence(),
             'amount' => fake()->sentence(),
             'amount_in_grams' => fake()->numberBetween(5, 5000),
         ];

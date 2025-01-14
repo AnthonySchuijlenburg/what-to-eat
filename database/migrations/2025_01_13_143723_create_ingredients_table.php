@@ -14,7 +14,8 @@ return new class extends Migration
     {
         Schema::create('ingredients', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(Recipe::class)->constrained();
+            $table->foreignIdFor(Recipe::class)->constrained()->cascadeOnDelete();
+            $table->string('name');
             $table->string('amount');
             $table->integer('amount_in_grams');
             $table->timestamps();
