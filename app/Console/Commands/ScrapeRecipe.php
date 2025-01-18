@@ -14,7 +14,7 @@ class ScrapeRecipe extends Command
      *
      * @var string
      */
-    protected $signature = 'recipe:scrape';
+    protected $signature = 'recipe:scrape {amount=5}';
 
     /**
      * The console command description.
@@ -25,24 +25,31 @@ class ScrapeRecipe extends Command
 
     public function handle(): void
     {
-        $source = ScrapedRecipe::query()->oldest()->where('scraped_at', '=', null)->first();
+        $source = ScrapedRecipe::query()
+            ->oldest()
+            ->where('scraped_at', '=', null)
+            ->orWhereColumn('scraped_at', '<', 'last_modified_at')
+            ->limit($this->argument('amount'))
+            ->get();
 
-        if ($source === null) {
+        if ($source->isEmpty()) {
             $this->info('No sources where available to scrape.');
 
             return;
         }
 
-        $this->info('Scraping: '.$source->source);
+        foreach ($source as $sourceItem) {
+            $this->info('Scraping: '.$sourceItem->source);
 
-        $browser = new HttpBrowser(HttpClient::create());
-        $crawler = $browser->request('GET', $source->source);
+            $browser = new HttpBrowser(HttpClient::create());
+            $crawler = $browser->request('GET', $sourceItem->source);
 
-        $source->update([
-            'content' => $crawler->outerHtml(),
-            'scraped_at' => now(),
-        ]);
+            $sourceItem->update([
+                'content' => $crawler->outerHtml(),
+                'scraped_at' => now(),
+            ]);
 
-        $source->save();
+            $sourceItem->save();
+        }
     }
 }
