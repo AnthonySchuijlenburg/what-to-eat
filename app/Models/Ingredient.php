@@ -12,7 +12,8 @@ class Ingredient extends Model
     /** @use HasFactory<\Database\Factories\IngredientFactory> */
     use HasFactory, HasUuids;
 
-    public function recipe(): BelongsTo {
+    public function recipe(): BelongsTo
+    {
         return $this->belongsTo(Recipe::class);
     }
 }
