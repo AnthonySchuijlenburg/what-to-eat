@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\ScrapedRecipe;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
@@ -48,6 +49,14 @@ class ScrapeRecipe extends Command
                 'content' => $crawler->outerHtml(),
                 'scraped_at' => now(),
             ]);
+
+            if ($crawler->getUri() === 'https://www.voedingscentrum.nl/nl/404.aspx') {
+                $sourceItem->update([
+                    'content' => null,
+                    'scraped_at' => new Carbon('01-01-2030'),
+                    'processed_at' => new Carbon('01-01-2030'),
+                ]);
+            }
 
             $sourceItem->save();
         }
