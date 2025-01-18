@@ -33,19 +33,33 @@ class FetchRecipesFromSitemap extends Command
         $browser = new HttpBrowser(HttpClient::create());
         $crawler = $browser->request('GET', $this->url);
 
-        $pattern = '/<loc>(.*?)<\/loc>/';
-        $count = 0;
+        $pattern = '/<url>(.*?)<\/url>/s';
 
-        if (preg_match_all($pattern, $crawler->outerHtml(), $matches)) {
-            foreach ($matches[1] as $link) {
-                $link = trim($link);
-                if (str_contains($link, '/recepten/gezond-recept/') && ! ScrapedRecipe::query()->where('source', '=', $link)->exists()) {
-                    (new ScrapedRecipe(['source' => $link]))->save();
-                    $count++;
-                }
-            }
+        if (! preg_match_all($pattern, $crawler->outerHtml(), $matches)) {
+            $this->error('No locations where found');
+
+            return;
         }
 
-        $this->info(count($matches[1]).' locations found and '.$count.' scheduled.');
+        $count = ['found' => count($matches[1]), 'updated' => 0, 'created' => 0];
+
+        foreach ($matches[1] as $loc) {
+            preg_match('/<loc>(.*?)<\/loc>/', $loc, $link);
+            preg_match('/<lastmod>(.*?)<\/lastmod>/', $loc, $lastModification);
+
+            if (! $link || ! $lastModification || ! str_contains($link[1], '/recepten/gezond-recept/')) {
+                continue;
+            }
+
+            $result = ScrapedRecipe::updateOrCreate(['source' => trim($link[1])], ['last_modified_at' => $lastModification[1]]);
+            $result->wasRecentlyCreated ? $count['created']++ : $count['updated']++;
+        }
+
+        $this->info(sprintf(
+            '%s found, %s created and %s updated',
+            $count['found'],
+            $count['created'],
+            $count['updated'],
+        ));
     }
 }

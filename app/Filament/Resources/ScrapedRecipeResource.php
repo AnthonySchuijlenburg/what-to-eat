@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ScrapedRecipeResource\Pages;
 use App\Models\ScrapedRecipe;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -28,6 +29,7 @@ class ScrapedRecipeResource extends Resource
                     ->maxLength(255),
                 Forms\Components\DateTimePicker::make('scraped_at'),
                 Forms\Components\DateTimePicker::make('processed_at'),
+                Forms\Components\DateTimePicker::make('last_modified_at'),
                 Forms\Components\Textarea::make('content')
                     ->rows(16)
                     ->columnSpanFull(),
@@ -46,6 +48,10 @@ class ScrapedRecipeResource extends Resource
                     ->dateTime()
                     ->toggleable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('last_modified_at')
+                    ->dateTime()
+                    ->toggleable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('source')
                     ->limit(50)
                     ->searchable(),
@@ -60,8 +66,54 @@ class ScrapedRecipeResource extends Resource
             ])
             ->defaultSort('scraped_at', 'desc')
             ->filters([
-                Filter::make('scraped_at')->query(fn (Builder $query): Builder => $query->where('scraped_at', '!=', null)),
-                Filter::make('processed_at')->query(fn (Builder $query): Builder => $query->where('processed_at', '!=', null)),
+                Filter::make('scraped_at')
+                    ->form([
+                        DatePicker::make('scraped_from'),
+                        DatePicker::make('scraped_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['scraped_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('scraped_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['scraped_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('scraped_at', '<=', $date),
+                            );
+                    }),
+                Filter::make('processed_at')
+                    ->form([
+                        DatePicker::make('processed_from'),
+                        DatePicker::make('processed_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['processed_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('processed_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['processed_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('processed_at', '<=', $date),
+                            );
+                    }),
+                Filter::make('last_modified_at')
+                    ->form([
+                        DatePicker::make('last_modified_from'),
+                        DatePicker::make('last_modified_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['last_modified_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('last_modified_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['last_modified_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('last_modified_at', '<=', $date),
+                            );
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
