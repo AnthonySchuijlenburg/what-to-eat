@@ -6,6 +6,7 @@ use App\Models\Recipe;
 use App\Models\ScrapedRecipe;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ProcessRecipes extends Command
@@ -53,12 +54,13 @@ class ProcessRecipes extends Command
 
         foreach ($scrapedRecipes as $scrapedRecipe) {
             $crawler = new Crawler($scrapedRecipe->content);
+
             $recipe = new Recipe([
-                'name' => $crawler->filter('h1')->text(),
+                'name' => $name = $crawler->filter('h1')->text(),
                 'description' => $crawler->filter('[itemprop^="description"]')->text(),
                 'variable_size' => false,
                 'serves' => preg_replace('/[^0-9]/', '', $crawler->filter('[itemprop^="recipeYield"]')->text()),
-                'image_url' => $crawler->filter('[itemprop^="image"]')->attr('src', ''),
+                'image_url' => '',
             ]);
             $recipe->scrapedRecipe()->associate($scrapedRecipe);
 
@@ -70,6 +72,18 @@ class ProcessRecipes extends Command
             $recipe->steps = $steps;
 
             $recipe->save();
+
+            try {
+                $image_url = $crawler->filter('[itemprop^="image"]')->attr('src', '');
+                $imageContent = file_get_contents($image_url);
+                Storage::disk('public')
+                    ->put(sprintf('%s.jpg', $recipe->id), $imageContent);
+
+                $recipe->image_url = sprintf('%s.jpg', $recipe->id);
+                $recipe->save();
+            } catch (\Exception $e) {
+                $this->error($e);
+            }
 
             foreach ($crawler->filter('[itemprop^="recipeIngredient"]') as $ingredient) {
                 $recipe->ingredients()->create([

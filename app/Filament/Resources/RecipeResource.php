@@ -25,6 +25,7 @@ class RecipeResource extends Resource
                 Forms\Components\FileUpload::make('image_url')
                     ->image()
                     ->required()
+                    ->visibility('public')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('name')
                     ->required()
