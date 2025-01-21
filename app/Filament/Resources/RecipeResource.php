@@ -29,16 +29,15 @@ class RecipeResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->columnSpan(2)
                     ->maxLength(255),
-                Forms\Components\Toggle::make('variable_size')
-                    ->inline(false)
-                    ->columnSpan(1)
-                    ->required(),
                 Forms\Components\TextInput::make('serves')
-                    ->required()
-                    ->columnSpan(1)
-                    ->numeric(),
+                    ->required(),
+                Forms\Components\TextInput::make('preparation_time')
+                    ->required(),
+                Forms\Components\TextInput::make('course')
+                    ->required(),
+                Forms\Components\TextInput::make('nutritional_value')
+                    ->required(),
                 Forms\Components\Textarea::make('description')
                     ->required()
                     ->columnSpanFull(),
@@ -48,9 +47,7 @@ class RecipeResource extends Resource
                     )
                     ->required()
                     ->columnSpanFull(),
-
-            ])
-            ->columns(4);
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -65,8 +62,6 @@ class RecipeResource extends Resource
                     ->counts('ingredients')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('variable_size')
-                    ->boolean(),
                 Tables\Columns\TextColumn::make('serves')
                     ->numeric()
                     ->sortable(),

@@ -56,10 +56,12 @@ class ProcessRecipes extends Command
             $crawler = new Crawler($scrapedRecipe->content);
 
             $recipe = new Recipe([
-                'name' => $name = $crawler->filter('h1')->text(),
+                'name' => $crawler->filter('h1')->text(),
                 'description' => $crawler->filter('[itemprop^="description"]')->text(),
-                'variable_size' => false,
-                'serves' => preg_replace('/[^0-9]/', '', $crawler->filter('[itemprop^="recipeYield"]')->text()),
+                'serves' => $crawler->filter('[itemprop^="recipeYield"]')->text(),
+                'preparation_time' => $crawler->filter('[itemprop^="totalTime"]')->text(),
+                'course' => $crawler->filter('[itemprop^="recipeCategory"]')->text(),
+                'nutritional_value' => $crawler->filter('[itemprop^="recipeCalories"]')->text(),
                 'image_url' => '',
             ]);
             $recipe->scrapedRecipe()->associate($scrapedRecipe);

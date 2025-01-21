@@ -18,8 +18,10 @@ class Recipe extends Model
         'name',
         'description',
         'steps',
-        'variable_size',
         'serves',
+        'preparation_time',
+        'course',
+        'nutritional_value',
         'image_url',
     ];
 
