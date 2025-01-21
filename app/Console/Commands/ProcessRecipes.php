@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Recipe;
 use App\Models\ScrapedRecipe;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
@@ -53,50 +54,56 @@ class ProcessRecipes extends Command
         }
 
         foreach ($scrapedRecipes as $scrapedRecipe) {
-            $crawler = new Crawler($scrapedRecipe->content);
-
-            $recipe = new Recipe([
-                'name' => $crawler->filter('h1')->text(),
-                'description' => $crawler->filter('[itemprop^="description"]')->text(),
-                'serves' => $crawler->filter('[itemprop^="recipeYield"]')->text(),
-                'preparation_time' => $crawler->filter('[itemprop^="totalTime"]')->text(),
-                'course' => $crawler->filter('[itemprop^="recipeCategory"]')->text(),
-                'nutritional_value' => $crawler->filter('[itemprop^="recipeCalories"]')->text(),
-                'image_url' => '',
-            ]);
-            $recipe->scrapedRecipe()->associate($scrapedRecipe);
-
-            $steps = [];
-            foreach ($crawler->filter('[itemprop^="recipeInstructions"] li') as $step) {
-                $steps[] = trim(str_replace('\n', '', $step->textContent));
-            }
-
-            $recipe->steps = $steps;
-
-            $recipe->save();
-
             try {
-                $image_url = $crawler->filter('[itemprop^="image"]')->attr('src', '');
-                $imageContent = file_get_contents($image_url);
-                Storage::disk('public')
-                    ->put(sprintf('%s.jpg', $recipe->id), $imageContent);
+                $crawler = new Crawler($scrapedRecipe->content);
 
-                $recipe->image_url = sprintf('%s.jpg', $recipe->id);
-                $recipe->save();
-            } catch (\Exception $e) {
-                $this->error($e);
-            }
-
-            foreach ($crawler->filter('[itemprop^="recipeIngredient"]') as $ingredient) {
-                $recipe->ingredients()->create([
-                    'name' => trim($ingredient->textContent),
-                    'amount' => trim($ingredient->textContent),
-                    'amount_in_grams' => 0,
+                $recipe = new Recipe([
+                    'name' => $crawler->filter('h1')->text(),
+                    'description' => $crawler->filter('[itemprop^="description"]')->text(),
+                    'serves' => $crawler->filter('[itemprop^="recipeYield"]')->text(),
+                    'preparation_time' => $crawler->filter('[itemprop^="totalTime"]')->text(),
+                    'course' => $crawler->filter('[itemprop^="recipeCategory"]')->text(),
+                    'nutritional_value' => $crawler->filter('[itemprop^="recipeCalories"]')->text(),
+                    'image_url' => '',
                 ]);
-            }
+                $recipe->scrapedRecipe()->associate($scrapedRecipe);
 
-            $scrapedRecipe->processed_at = now();
-            $scrapedRecipe->save();
+                $steps = [];
+                foreach ($crawler->filter('[itemprop^="recipeInstructions"] li') as $step) {
+                    $steps[] = trim(str_replace('\n', '', $step->textContent));
+                }
+
+                $recipe->steps = $steps;
+
+                $recipe->save();
+
+                try {
+                    $image_url = $crawler->filter('[itemprop^="image"]')->attr('src', '');
+                    $imageContent = file_get_contents($image_url);
+                    Storage::disk('public')
+                        ->put(sprintf('%s.jpg', $recipe->id), $imageContent);
+
+                    $recipe->image_url = sprintf('%s.jpg', $recipe->id);
+                    $recipe->save();
+                } catch (\Exception $e) {
+                    $this->error($e);
+                }
+
+                foreach ($crawler->filter('[itemprop^="recipeIngredient"]') as $ingredient) {
+                    $recipe->ingredients()->create([
+                        'name' => trim($ingredient->textContent),
+                        'amount' => trim($ingredient->textContent),
+                        'amount_in_grams' => 0,
+                    ]);
+                }
+
+                $scrapedRecipe->processed_at = now();
+                $scrapedRecipe->save();
+            } catch (\Exception $e) {
+                $this->info($e);
+                $scrapedRecipe->processed_at = new Carbon('01-01-2031');
+                $scrapedRecipe->save();
+            }
         }
 
         $this->info(sprintf('Processed %s recipes', $scrapedRecipes->count()));
