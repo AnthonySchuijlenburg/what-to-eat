@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Ingredient;
+use App\Models\ScrapedRecipe;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Recipe>
+ * @extends Factory<\App\Models\Recipe>
  */
 class RecipeFactory extends Factory
 {
@@ -18,12 +19,12 @@ class RecipeFactory extends Factory
     public function definition(): array
     {
         return [
+            'source' => ScrapedRecipe::factory(),
             'name' => fake()->sentence(),
             'description' => fake()->sentences(fake()->numberBetween(2, 6), true),
             'steps' => fake()->sentences(fake()->numberBetween(5, 10)),
             'variable_size' => $variable = fake()->boolean(),
             'serves' => $variable ? 1 : fake()->numberBetween(2, 10),
-            'source' => fake()->url(),
             'image_url' => fake()->imageUrl(),
         ];
     }

@@ -12,6 +12,13 @@ class Ingredient extends Model
     /** @use HasFactory<\Database\Factories\IngredientFactory> */
     use HasFactory, HasUuids;
 
+    protected $fillable = [
+        'recipe_id',
+        'name',
+        'amount',
+        'amount_in_grams',
+    ];
+
     public function recipe(): BelongsTo
     {
         return $this->belongsTo(Recipe::class);

@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\RecipeFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Recipe extends Model
 {
-    /** @use HasFactory<\Database\Factories\RecipeFactory> */
+    /** @use HasFactory<RecipeFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [
@@ -18,7 +20,7 @@ class Recipe extends Model
         'steps',
         'variable_size',
         'serves',
-        'source',
+        'image_url',
     ];
 
     protected $casts = [
@@ -29,5 +31,10 @@ class Recipe extends Model
     public function ingredients(): HasMany
     {
         return $this->hasMany(Ingredient::class);
+    }
+
+    public function scrapedRecipe(): BelongsTo
+    {
+        return $this->belongsTo(ScrapedRecipe::class);
     }
 }

@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('recipes:fetch')->daily();
 Schedule::command('recipes:scrape')->everyMinute();
+Schedule::command('recipes:process')->everyMinute();
