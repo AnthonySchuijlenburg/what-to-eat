@@ -8,14 +8,14 @@ use Illuminate\Console\Command;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 
-class ScrapeRecipe extends Command
+class ScrapeRecipes extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'recipe:scrape {amount=5}';
+    protected $signature = 'recipes:scrape {amount=5}';
 
     /**
      * The console command description.

@@ -7,14 +7,14 @@ use Illuminate\Console\Command;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 
-class FetchRecipesFromSitemap extends Command
+class FetchRecipes extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'recipe:fetch';
+    protected $signature = 'recipes:fetch';
 
     /**
      * The console command description.
