@@ -50,6 +50,10 @@ class EnrichIngredients extends Command
                         provided: "citroensap", response: {"name": "citroensap", "amount": "1 scheutje", "amount_in_grams": 5}
                     '
                 )
+                    ->options([
+                        'num_thread' => 2,
+                        'temperature' => 0.6,
+                    ])
                     ->prompt($ingredient->source)
                     ->stream(false)
                     ->ask();
