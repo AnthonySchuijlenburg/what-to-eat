@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Recipes;
 
 use App\Models\Recipe;
 use App\Models\ScrapedRecipe;
@@ -91,9 +91,7 @@ class ProcessRecipes extends Command
 
                 foreach ($crawler->filter('[itemprop^="recipeIngredient"]') as $ingredient) {
                     $recipe->ingredients()->create([
-                        'name' => trim($ingredient->textContent),
-                        'amount' => trim($ingredient->textContent),
-                        'amount_in_grams' => 0,
+                        'source' => trim($ingredient->textContent),
                     ]);
                 }
 

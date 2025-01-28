@@ -14,3 +14,5 @@ Schedule::command('backup:run')->daily()->at('01:30');
 Schedule::command('recipes:fetch')->daily();
 Schedule::command('recipes:scrape')->everyMinute();
 Schedule::command('recipes:process')->everyMinute();
+
+Schedule::command('ingredients:enrich')->everyMinute();

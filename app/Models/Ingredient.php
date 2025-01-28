@@ -18,6 +18,7 @@ class Ingredient extends Model
         'name',
         'amount',
         'amount_in_grams',
+        'enriched_at',
     ];
 
     public function recipe(): BelongsTo

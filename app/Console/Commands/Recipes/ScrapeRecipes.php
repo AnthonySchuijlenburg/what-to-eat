@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Recipes;
 
 use App\Models\ScrapedRecipe;
 use Carbon\Carbon;
