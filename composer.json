@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.4",
         "awcodes/overlook": "^2.2",
+        "cloudstudio/ollama-laravel": "^1.1",
         "filament/filament": "^3.2",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
