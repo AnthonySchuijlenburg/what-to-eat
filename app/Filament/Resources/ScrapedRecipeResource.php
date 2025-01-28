@@ -4,12 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ScrapedRecipeResource\Pages;
 use App\Models\ScrapedRecipe;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -40,26 +43,80 @@ class ScrapedRecipeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('scraped_at')
+                TextColumn::make('status')
+                    ->badge()
+                    ->state(function (ScrapedRecipe $record): string {
+                        if ($record->scraped_at === null && $record->processed_at === null) {
+                            return 'Unscraped';
+                        }
+
+                        if (
+                            new Carbon($record->scraped_at) >= new Carbon('01-01-2029')
+                        ) {
+                            return 'Not found';
+                        }
+
+                        if (
+                            new Carbon($record->scraped_at) <= new Carbon('01-01-2029')
+                            && new Carbon($record->processed_at) >= new Carbon('01-01-2030')
+                        ) {
+                            return 'Error processing';
+                        }
+
+                        if ($record->processed_at === null) {
+                            return 'Unprocessed';
+                        }
+
+                        return "Processed";
+                    })
+                    ->color(function (ScrapedRecipe $record): string {
+                        if ($record->scraped_at === null && $record->processed_at === null) {
+                            return 'warning';
+                        }
+
+                        if (
+                            new Carbon($record->scraped_at) >= new Carbon('01-01-2029')
+                        ) {
+                            return 'danger';
+                        }
+
+                        if (
+                            new Carbon($record->scraped_at) <= new Carbon('01-01-2029')
+                            && new Carbon($record->processed_at) >= new Carbon('01-01-2030')
+                        ) {
+                            return 'danger';
+                        }
+
+                        if ($record->processed_at === null) {
+                            return 'warning';
+                        }
+
+                        return "success";
+                    }),
+                TextColumn::make('scraped_at')
                     ->dateTime()
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
-                Tables\Columns\TextColumn::make('processed_at')
+                TextColumn::make('scraped_at')
                     ->dateTime()
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
-                Tables\Columns\TextColumn::make('last_modified_at')
+                TextColumn::make('processed_at')
                     ->dateTime()
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
-                Tables\Columns\TextColumn::make('source')
+                TextColumn::make('last_modified_at')
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+                TextColumn::make('source')
                     ->limit(50)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
