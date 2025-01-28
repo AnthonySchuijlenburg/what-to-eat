@@ -12,7 +12,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -67,7 +66,7 @@ class ScrapedRecipeResource extends Resource
                             return 'Unprocessed';
                         }
 
-                        return "Processed";
+                        return 'Processed';
                     })
                     ->color(function (ScrapedRecipe $record): string {
                         if ($record->scraped_at === null && $record->processed_at === null) {
@@ -91,7 +90,7 @@ class ScrapedRecipeResource extends Resource
                             return 'warning';
                         }
 
-                        return "success";
+                        return 'success';
                     }),
                 TextColumn::make('scraped_at')
                     ->dateTime()
