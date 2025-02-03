@@ -6,7 +6,6 @@ use App\Models\ScrapedRecipe;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\Middleware\RateLimited;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -20,16 +19,6 @@ class ScrapeRecipe implements ShouldQueue
     public function __construct(
         private ScrapedRecipe $scrapedRecipe
     ) {}
-
-    /**
-     * Get the middleware the job should pass through.
-     *
-     * @return array<int, object>
-     */
-    public function middleware(): array
-    {
-        return [new RateLimited('scrape-recipe')];
-    }
 
     /**
      * Execute the job.
@@ -53,5 +42,7 @@ class ScrapeRecipe implements ShouldQueue
         }
 
         $this->scrapedRecipe->save();
+
+        sleep(10);
     }
 }
