@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Recipes;
 
+use App\Jobs\ScrapeRecipe;
 use App\Models\ScrapedRecipe;
 use Illuminate\Console\Command;
 use Symfony\Component\BrowserKit\HttpBrowser;
@@ -28,7 +29,7 @@ class FetchRecipes extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $browser = new HttpBrowser(HttpClient::create());
         $crawler = $browser->request('GET', $this->url);
@@ -52,6 +53,8 @@ class FetchRecipes extends Command
             }
 
             $result = ScrapedRecipe::updateOrCreate(['source' => trim($link[1])], ['last_modified_at' => $lastModification[1]]);
+            ScrapeRecipe::dispatch($result);
+
             $result->wasRecentlyCreated ? $count['created']++ : $count['updated']++;
         }
 
