@@ -3,7 +3,6 @@
 namespace App\Console\Commands\Recipes;
 
 use App\Jobs\ScrapeRecipe;
-use App\Models\ScrapedRecipe;
 use Illuminate\Console\Command;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
