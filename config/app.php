@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'recipes_source_base_url' => env('APP_RECIPES_SOURCE_BASE_URL', 'https://www.voedingscentrum.nl'),
+
 ];

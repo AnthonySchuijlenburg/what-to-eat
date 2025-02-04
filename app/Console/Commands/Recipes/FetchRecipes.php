@@ -23,15 +23,17 @@ class FetchRecipes extends Command
      */
     protected $description = 'Command description';
 
-    private $url = 'https://www.voedingscentrum.nl/sitemap.xml';
-
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
+        $url = config('app.recipes_source_base_url').'/sitemap.xml';
+
+        $this->info($url);
+
         $browser = new HttpBrowser(HttpClient::create());
-        $crawler = $browser->request('GET', $this->url);
+        $crawler = $browser->request('GET', $url);
 
         $pattern = '/<url>(.*?)<\/url>/s';
 
@@ -41,7 +43,7 @@ class FetchRecipes extends Command
             return;
         }
 
-        $count = ['found' => count($matches[1]), 'updated' => 0, 'created' => 0];
+        $count = 0;
 
         foreach ($matches[1] as $loc) {
             preg_match('/<loc>(.*?)<\/loc>/', $loc, $link);
@@ -51,17 +53,14 @@ class FetchRecipes extends Command
                 continue;
             }
 
-            $result = ScrapedRecipe::updateOrCreate(['source' => trim($link[1])], ['last_modified_at' => $lastModification[1]]);
-            ScrapeRecipe::dispatch($result);
-
-            $result->wasRecentlyCreated ? $count['created']++ : $count['updated']++;
+            ScrapeRecipe::dispatch(trim($link[1]), trim($lastModification[1]));
+            $count++;
         }
 
         $this->info(sprintf(
-            '%s found, %s created and %s updated',
-            $count['found'],
-            $count['created'],
-            $count['updated'],
+            '%s found, %s scheduled',
+            count($matches[1]),
+            $count,
         ));
     }
 }

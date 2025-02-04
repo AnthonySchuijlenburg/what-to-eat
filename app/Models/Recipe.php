@@ -22,6 +22,7 @@ class Recipe extends Model
         'course',
         'nutritional_value',
         'image_url',
+        'source_url',
     ];
 
     protected $casts = [
