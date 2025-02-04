@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Exceptions\NotFoundException;
 use App\Models\Recipe;
 use Carbon\Carbon;
+use Cloudstudio\Ollama\Facades\Ollama;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,8 @@ use Symfony\Component\HttpClient\HttpClient;
 class ScrapeRecipe implements ShouldQueue
 {
     use Queueable;
+
+    public int $timeout = 240;
 
     /**
      * Create a new job instance.
@@ -41,10 +44,7 @@ class ScrapeRecipe implements ShouldQueue
         }
 
         $content = $this->scrape();
-
         $this->process($content);
-
-        sleep(2);
     }
 
     /**
@@ -62,6 +62,9 @@ class ScrapeRecipe implements ShouldQueue
         return $crawler->filter('body')->outerHtml();
     }
 
+    /**
+     * @throws \Exception
+     */
     private function process(string $content): Recipe
     {
         $crawler = new Crawler($content);
@@ -85,7 +88,17 @@ class ScrapeRecipe implements ShouldQueue
 
         $recipe->steps = $steps;
 
+        // Extract the ingredients before writing the recipe to the database
+        // So that the database won't have incomplete recipes when something goes wrong
+        $ingredients = $this->extractIngredients(
+            $recipe,
+            $crawler->filter('[itemprop^="recipeIngredient"]'));
+
         $recipe->save();
+
+        $recipe->ingredients()->createMany(
+            $ingredients
+        );
 
         try {
             $image_url = $crawler->filter('[itemprop^="image"]')->attr('src', '');
@@ -98,16 +111,48 @@ class ScrapeRecipe implements ShouldQueue
             // Don't save an image
         }
 
-        $ingredients = [];
-
-        foreach ($crawler->filter('[itemprop^="recipeIngredient"]') as $ingredient) {
-            $ingredients[] = [
-                'source' => trim($ingredient->textContent),
-            ];
-        }
-
-        $recipe->ingredients()->createMany($ingredients);
-
         return $recipe;
+    }
+
+    private function extractIngredients(Recipe $recipe, Crawler $crawler): array
+    {
+        $ingredients = array_map(fn ($ingredient) => trim($ingredient->textContent), iterator_to_array($crawler));
+
+        $prompt = 'instructions: '.implode('', $recipe->steps)."\n".
+            'ingredients: ["'.implode('", "', $ingredients).'"]';
+
+        $response = Ollama::agent(
+            '
+                        You are a backend service only allowed to respond in a structured JSON-format.
+                        You will be provided with a list of instructions followed by a list of ingredients, all in Dutch.
+                        Your response must be in Dutch.
+
+                        Never use abbreviations, when provided with "el" or "g" use "eetlepel" or "gram".
+                        Never use unicode, always writhe fractions out fully as "1/2" or "1/4".
+                        This format consist of the following entries: {"name": "name", "amount": "amount", "amount_in_grams": amount_in_grams}.
+
+                        Given:
+                        instructions: "Meng alle ingredienten."
+                        ingredients: ["citroensap", "1 shot wodka", "een paar blokjes ijs", "100ml sprite", "½ el suiker"]
+
+                        Expected response:
+                        [
+                            {"source": "citroensap","name": "citroensap", "amount": "1 scheutje", "amount_in_grams": 5},
+                            {"source": "1 shot wodka","name": "wodka", "amount": "1 shot", "amount_in_grams": 30},
+                            {"source": "een paar blokjes ijs","name": "ijs", "amount": "een paar blokjes", "amount_in_grams": 50},
+                            {"source": "100 milliliter sprite","name": "sprite", "amount": "100 milliliter", "amount_in_grams": 100},
+                            {"source": 1/2 eetlepel suiker","name": "suiker", "amount": "1/2 eetlepel", "amount_in_grams": 2.5},
+                        ]
+                    '
+        )
+            ->options([
+                'num_thread' => 2,
+                'temperature' => 0.4,
+            ])
+            ->prompt($prompt)
+            ->stream(false)
+            ->ask();
+
+        return json_decode($response['response'], true);
     }
 }
