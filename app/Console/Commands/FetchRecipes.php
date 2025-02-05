@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\Recipes;
+namespace App\Console\Commands;
 
 use App\Jobs\ScrapeRecipe;
 use Illuminate\Console\Command;
