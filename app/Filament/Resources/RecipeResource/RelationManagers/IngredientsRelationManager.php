@@ -29,9 +29,7 @@ class IngredientsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('source'),
                 Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('amount'),
                 Tables\Columns\TextColumn::make('amount_in_grams')->sortable(),
-                Tables\Columns\TextColumn::make('enriched_at'),
             ])
             ->defaultSort('amount_in_grams', 'desc')
             ->filters([

@@ -28,11 +28,8 @@ class IngredientResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('name')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('amount')
-                    ->maxLength(255),
                 Forms\Components\TextInput::make('amount_in_grams')
                     ->numeric(),
-                Forms\Components\DateTimePicker::make('enriched_at'),
             ]);
     }
 
@@ -47,15 +44,9 @@ class IngredientResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('amount')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('amount_in_grams')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('enriched_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
