@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class RecipeResource extends Resource
@@ -38,6 +39,8 @@ class RecipeResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('nutritional_value')
                     ->required(),
+                Forms\Components\TextInput::make('source_url')
+                    ->required(),
                 Forms\Components\Textarea::make('description')
                     ->required()
                     ->columnSpanFull(),
@@ -65,6 +68,10 @@ class RecipeResource extends Resource
                 Tables\Columns\TextColumn::make('serves')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('preparation_time')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('course')
+                    ->toggleable(),
                 Tables\Columns\ImageColumn::make('image_url'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -77,7 +84,32 @@ class RecipeResource extends Resource
             ])
             ->defaultSort('name')
             ->filters([
-                //
+                SelectFilter::make('preparation_time')
+                    ->multiple()
+                    ->options(
+                        function () {
+                            $options = Recipe::select('preparation_time')
+                                ->distinct()
+                                ->get()
+                                ->toArray();
+
+                            $options = array_map(fn ($item) => [$item['preparation_time'] => ucfirst($item['preparation_time'])], $options);
+
+                            return array_merge(...$options);
+                        }),
+                SelectFilter::make('course')
+                    ->multiple()
+                    ->options(
+                        function () {
+                            $options = Recipe::select('course')
+                                ->distinct()
+                                ->get()
+                                ->toArray();
+
+                            $options = array_map(fn ($item) => [$item['course'] => ucfirst($item['course'])], $options);
+
+                            return array_merge(...$options);
+                        }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
