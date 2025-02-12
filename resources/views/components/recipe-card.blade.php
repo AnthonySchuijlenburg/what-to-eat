@@ -9,7 +9,16 @@
         <span>Ingrediënten</span>
         <ul class="ml-6 list-disc">
             @foreach($recipe->ingredients as $ingredient)
-                <li>{{$ingredient->source}}</li>
+                @php
+                    $found = false;
+                    foreach (request('ingredients', []) as $ingredientToMatch) {
+                        $regex = "/.*" . preg_quote(strtolower($ingredientToMatch), '/') . ".*/";
+                        if (preg_match($regex, $ingredient)) {
+                            $found = true;
+                        }
+                    }
+                @endphp
+                <li @class(['text-green-600' => $found])>{{$ingredient->source}}</li>
             @endforeach
         </ul>
     </div>

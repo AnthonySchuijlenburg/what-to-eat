@@ -20,6 +20,8 @@ class RecipeController extends Controller
         $preparationTime = $request->input('preparation_time');
         $serves = $request->input('serves');
 
+        $ingredients = $request->input('ingredients', []);
+
         $recipes = Recipe::query()
             ->when($name, function ($query) use ($name) {
                 return $query->where('name', 'like', '%'.$name.'%');
@@ -33,8 +35,23 @@ class RecipeController extends Controller
             ->when($serves, function ($query) use ($serves) {
                 return $query->whereIn('serves', $serves);
             })
+            ->when($ingredients, function ($query) use ($ingredients) {
+                $query->withCount([
+                    'ingredients as matching_ingredients_count' => function ($query) use ($ingredients) {
+                        $query->where(function ($q) use ($ingredients) {
+                            foreach ($ingredients as $ingredient) {
+                                $q->orWhere('name', 'like', '%'.strtolower($ingredient).'%');
+                            }
+                        });
+                    },
+                ])
+                    ->orderByDesc('matching_ingredients_count');
+
+                return $query;
+            })
             ->with('ingredients')
-            ->latest()->get();
+            ->latest()
+            ->get();
 
         return view('recipes.index', [
             'recipes' => $recipes,

@@ -8,14 +8,15 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <form method="GET" action="{{ route('recipes.index') }}" class="w-full h-fit mb-4 flex flex-col items-start border rounded p-4">
             <h2 class="text-2xl">Filters</h2>
+            <livewire:ingredient-list :ingredients="request('ingredients')" />
 
             <x-filter :options="$filters['courses']" id="courses" label="Soort gerecht" />
             <x-filter :options="$filters['preparation_times']" id="preparation_times"  label="Bereidingstijd" />
             <x-filter :options="$filters['serves']" id="serves" label="Porties" />
 
+            <input type="text" name="name" placeholder="Search by name"
+                   value="{{ request('name') }}" class="input h-10" />
             <div class="w-full my-4 flex items-center gap-2">
-                <input type="text" name="name" placeholder="Search by name"
-                       value="{{ request('name') }}" class="input h-10" />
                 <button type="submit" class="btn h-10">Search</button>
                 <a href="{{ route('recipes.index') }}" class="btn h-10">Clear</a>
             </div>
