@@ -89,8 +89,8 @@ return [
 
         'slow-requests' => [
             'columnSpan' => [
-                'md' => 7,
-                'xl' => 7,
+                'md' => 12,
+                'xl' => 12,
             ],
             'cols' => 'full',
             'ignoreAfter' => '1 day',
