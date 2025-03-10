@@ -16,9 +16,23 @@ use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersAction;
 use Filament\Support\Enums\ActionSize;
 
-class Dashboard extends BaseDashboard
+class PulseStats extends BaseDashboard
 {
     use HasFiltersAction;
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Pulse Stats';
+    }
+
+    public static function getRoutePath(): string
+    {
+        return 'pusle-stats';
+    }
 
     public function getColumns(): int|string|array
     {
@@ -30,11 +44,11 @@ class Dashboard extends BaseDashboard
         return [
             ActionGroup::make([
                 Action::make('1h')
-                    ->action(fn () => $this->redirect(route('filament.manager.pages.dashboard'))),
+                    ->action(fn () => $this->redirect(route('filament.admin.pages.pulse-stats'))),
                 Action::make('24h')
-                    ->action(fn () => $this->redirect(route('filament.manager.pages.dashboard', ['period' => '24_hours']))),
+                    ->action(fn () => $this->redirect(route('filament.admin.pages.pulse-stats', ['period' => '24_hours']))),
                 Action::make('7d')
-                    ->action(fn () => $this->redirect(route('filament.manager.pages.dashboard', ['period' => '7_days']))),
+                    ->action(fn () => $this->redirect(route('filament.admin.pages.pulse-stats', ['period' => '7_days']))),
             ])
                 ->label(__('Filter'))
                 ->icon('heroicon-m-funnel')

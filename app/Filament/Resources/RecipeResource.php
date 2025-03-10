@@ -19,6 +19,8 @@ class RecipeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cake';
 
+    protected static ?string $navigationGroup = 'Resources';
+
     public static function form(Form $form): Form
     {
         return $form
