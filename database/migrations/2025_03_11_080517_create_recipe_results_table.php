@@ -15,7 +15,6 @@ return new class extends Migration
         Schema::create('recipe_results', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignIdFor(Recipe::class)
-                ->after('url')
                 ->nullable();
 
             $table->string('url');
