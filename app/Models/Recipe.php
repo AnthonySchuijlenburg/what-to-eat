@@ -30,6 +30,11 @@ class Recipe extends Model
         'variable_size' => 'boolean',
     ];
 
+    public function sources(): HasMany
+    {
+        return $this->hasMany(RecipeResult::class);
+    }
+
     public function ingredients(): HasMany
     {
         return $this->hasMany(Ingredient::class);

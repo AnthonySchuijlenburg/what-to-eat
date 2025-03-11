@@ -4,8 +4,10 @@ namespace App\Jobs;
 
 use App\Exceptions\NotFoundException;
 use App\Models\Recipe;
+use App\Models\RecipeResult;
 use Carbon\Carbon;
 use Cloudstudio\Ollama\Facades\Ollama;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -34,23 +36,38 @@ class ScrapeRecipe implements ShouldQueue
      */
     public function handle(): void
     {
-        $recipe = Recipe::query()->where('source_url', $this->sourceUrl)->first();
+        $recipeResult = RecipeResult::query()
+            ->where('source_url', $this->sourceUrl)
+            ->latest()
+            ->first();
 
         if (
-            $recipe &&
-            new Carbon($recipe->updated_at) > new Carbon($this->lastModification)
+            $recipeResult &&
+            new Carbon($recipeResult->updated_at) > new Carbon($this->lastModification)
         ) {
             return;
         }
 
-        $content = $this->scrape();
-        $this->process($content);
+        try {
+            $content = $this->scrape();
+            $this->process($content);
+        } catch (NotFoundException $exception) {
+            RecipeResult::query()
+                ->updateOrCreate(
+                    [
+                        'url' => $this->sourceUrl,
+                    ],
+                    [
+                        'status_code' => 404,
+                    ]
+                );
+        }
     }
 
     /**
      * @throws NotFoundException
      */
-    private function scrape(): string
+    private function scrape(): RecipeResult
     {
         $browser = new HttpBrowser(HttpClient::create());
         $crawler = $browser->request('GET', $this->sourceUrl);
@@ -59,15 +76,22 @@ class ScrapeRecipe implements ShouldQueue
             throw new NotFoundException;
         }
 
-        return $crawler->filter('body')->outerHtml();
+        $content = $crawler->filter('body')->outerHtml();
+
+        return RecipeResult::query()
+            ->create(
+                [
+                    'url' => $this->sourceUrl,
+                    // An error is thrown if the status_code is not a 200
+                    'status_code' => 200,
+                    'result' => $content,
+                ]
+            );
     }
 
-    /**
-     * @throws \Exception
-     */
-    private function process(string $content): Recipe
+    private function process(RecipeResult $recipeResult): Recipe
     {
-        $crawler = new Crawler($content);
+        $crawler = new Crawler($recipeResult->result);
 
         $recipe = new Recipe([
             'name' => $crawler->filter('h1')->text(),
@@ -79,6 +103,14 @@ class ScrapeRecipe implements ShouldQueue
             'image_url' => '',
             'source_url' => $this->sourceUrl,
         ]);
+
+        $previousRecipe = Recipe::query()
+            ->where('source_url', $this->sourceUrl)
+            ->first();
+
+        if ($previousRecipe !== null) {
+            $recipe->id = $previousRecipe->id;
+        }
 
         $steps = [];
 
@@ -96,6 +128,11 @@ class ScrapeRecipe implements ShouldQueue
 
         $recipe->save();
 
+        $recipeResult
+            ->recipe()
+            ->associate($recipe)
+            ->save();
+
         $recipe->ingredients()->createMany(
             $ingredients
         );
@@ -107,7 +144,7 @@ class ScrapeRecipe implements ShouldQueue
                 ->put(sprintf('%s.jpg', $recipe->id), $imageContent);
             $recipe->image_url = sprintf('%s.jpg', $recipe->id);
             $recipe->save();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Don't save an image
         }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Recipe;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,10 +14,13 @@ return new class extends Migration
     {
         Schema::create('recipe_results', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignIdFor(Recipe::class)
+                ->after('url')
+                ->nullable();
 
             $table->string('url');
-            $table->integer('status_code');
-            $table->longText('result');
+            $table->integer('status_code')->nullable();
+            $table->longText('result')->nullable();
 
             $table->timestamps();
         });
