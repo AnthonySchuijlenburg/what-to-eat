@@ -37,7 +37,7 @@ class ScrapeRecipe implements ShouldQueue
     public function handle(): void
     {
         $recipeResult = RecipeResult::query()
-            ->where('source_url', $this->sourceUrl)
+            ->where('url', $this->sourceUrl)
             ->latest()
             ->first();
 
