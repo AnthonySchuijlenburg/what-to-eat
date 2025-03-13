@@ -17,14 +17,20 @@ class ScrapeRecipeJob implements ShouldQueue
 {
     use Queueable;
 
+    private BrowserService $browserService;
+
     /**
      * Create a new job instance.
      */
     public function __construct(
         private readonly string $sourceUrl,
         private readonly string $lastModification,
-        private BrowserService $browserService,
-    ) {}
+        BrowserService $browserService = null,
+    ) {
+        if(null === $browserService) {
+            $this->browserService = new BrowserService();
+        }
+    }
 
     public function handle(): void
     {
@@ -67,14 +73,43 @@ class ScrapeRecipeJob implements ShouldQueue
 
         $recipe = new Recipe([
             'name' => $crawler->filter('h1')->text(),
-            'description' => $crawler->filter('[itemprop^="description"]')->text(),
-            'serves' => $crawler->filter('[itemprop^="recipeYield"]')->text(),
-            'preparation_time' => $crawler->filter('[itemprop^="totalTime"]')->text(),
-            'course' => $crawler->filter('[itemprop^="recipeCategory"]')->text(),
-            'nutritional_value' => $crawler->filter('[itemprop^="recipeCalories"]')->text(),
+            'serves' => 'Onbekend',
+            'preparation_time' => 'Onbekend',
+            'course' => 'Onbekend',
+            'nutritional_value' => 'Onbekend',
             'image_url' => '',
             'source_url' => $this->sourceUrl,
         ]);
+
+        try {
+            $recipe->description = $crawler->filter('[itemprop^="description"]')->text();
+        } catch (Exception $exception) {
+            // do nothing
+        }
+
+        try {
+            $recipe->serves = $crawler->filter('[itemprop^="recipeYield"]')->text();
+        } catch (Exception $exception) {
+            // do nothing
+        }
+
+        try {
+            $recipe->preparation_time = $crawler->filter('[itemprop^="totalTime"]')->text();
+        } catch (Exception $exception) {
+            // do nothing
+        }
+
+        try {
+            $recipe->course = $crawler->filter('[itemprop^="recipeCategory"]')->text();
+        } catch (Exception $exception) {
+            // do nothing
+        }
+
+        try {
+            $recipe->nutritional_value = $crawler->filter('[itemprop^="recipeCalories"]')->text();
+        } catch (Exception $exception) {
+            // do nothing
+        }
 
         $previousRecipe = Recipe::query()
             ->where('source_url', $this->sourceUrl)
@@ -111,6 +146,11 @@ class ScrapeRecipeJob implements ShouldQueue
 
         try {
             $image_url = $crawler->filter('[itemprop^="image"]')->attr('src', '');
+
+            if (null === $image_url || '' === $image_url) {
+                Throw new Exception('Image URL is empty');
+            }
+
             $imageContent = file_get_contents($image_url);
             Storage::disk('public')
                 ->put(sprintf('%s.jpg', $recipe->id), $imageContent);
