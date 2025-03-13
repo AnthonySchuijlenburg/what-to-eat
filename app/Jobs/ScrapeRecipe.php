@@ -26,14 +26,9 @@ class ScrapeRecipe implements ShouldQueue
      */
     public function __construct(
         private readonly string $sourceUrl,
-        private readonly string $lastModification
+        private readonly string $lastModification,
     ) {}
 
-    /**
-     * Execute the job.
-     *
-     * @throws NotFoundException
-     */
     public function handle(): void
     {
         $recipeResult = RecipeResult::query()

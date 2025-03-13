@@ -2,22 +2,28 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\NotFoundException;
+use App\Models\RecipeResult;
 use App\Services\BrowserService;
+use App\Services\SitemapService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Carbon;
 
 class FetchSitemap implements ShouldQueue
 {
     use Queueable;
 
-    private BrowserService $browserService;
+    private SitemapService $sitemapService;
 
     /**
      * Create a new job instance.
      */
     public function __construct()
     {
-        $this->browserService = new BrowserService;
+        $this->sitemapService = new SitemapService(
+            new BrowserService(),
+        );
     }
 
     /**
@@ -25,24 +31,17 @@ class FetchSitemap implements ShouldQueue
      */
     public function handle(): void
     {
-        $url = config('app.recipes_source_base_url').'/sitemap.xml';
-        $result = $this->browserService->makeRequest('GET', $url);
-
-        $pattern = '/<url>(.*?)<\/url>/s';
-
-        if (! preg_match_all($pattern, $result, $matches)) {
+        try {
+            $sitemap = $this->sitemapService->fetchSitemap();
+        } catch (NotFoundException $exception) {
+            // Retry the job at a later time
             return;
         }
 
-        foreach ($matches[1] as $loc) {
-            preg_match('/<loc>(.*?)<\/loc>/', $loc, $link);
-            preg_match('/<lastmod>(.*?)<\/lastmod>/', $loc, $lastModification);
+        $links = $this->sitemapService->unpackSitemapAndScheduleJobs($sitemap);
 
-            if (! $link || ! $lastModification || ! str_contains($link[1], '/recepten/gezond-recept/')) {
-                continue;
-            }
-
-            ScrapeRecipe::dispatch(trim($link[1]), trim($lastModification[1]));
+        foreach ($links as $link => $lastChange) {
+            $this->sitemapService->handleSitemapLocation($link, $lastChange);
         }
     }
 }

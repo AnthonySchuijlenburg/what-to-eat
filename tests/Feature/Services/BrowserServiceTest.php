@@ -8,7 +8,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\BrowserKit\Response;
 use Tests\TestCase;
 
-class BrowserTest extends TestCase
+class BrowserServiceTest extends TestCase
 {
     private MockObject $browser;
 
