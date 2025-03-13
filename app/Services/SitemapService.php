@@ -47,6 +47,7 @@ readonly class SitemapService
 
     public function handleSitemapLocation(string $link, string $lastChange): void
     {
-        ScrapeRecipeJob::dispatch($link, $lastChange);
+        // TODO: Is this the way to do DI?
+        ScrapeRecipeJob::dispatch($link, $lastChange, $this->browserService);
     }
 }
