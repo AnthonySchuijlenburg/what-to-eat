@@ -33,7 +33,7 @@ readonly class SitemapService
      */
     public function unpackSitemapAndReturnLocations(string $sitemap): array
     {
-        $pattern = '/<url>.*?<loc>(?<url>.*?\/recepten\/gezond-recept\/.*?)<\/loc>.*?<lastmod>(?<lastmod>.*?)<\/lastmod>.*?<\/url>/s';
+        $pattern = '/<url>[^<\/]*?<loc>(?<url>[^<]*?\/recepten\/gezond-recept\/.*?)<\/loc>.*?<lastmod>(?<lastmod>.*?)<\/lastmod>.*?<\/url>/s';
         $matchCount = preg_match_all($pattern, $sitemap, $matches);
 
         $links = [];
@@ -47,7 +47,6 @@ readonly class SitemapService
 
     public function handleSitemapLocation(string $link, string $lastChange): void
     {
-        // TODO: Is this the way to do DI?
-        ScrapeRecipeJob::dispatch($link, $lastChange, $this->browserService);
+        ScrapeRecipeJob::dispatch($link, $lastChange);
     }
 }
