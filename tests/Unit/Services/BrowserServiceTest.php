@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\Services;
+namespace Tests\Unit\Services;
 
 use App\Services\BrowserService;
 use PHPUnit\Framework\MockObject\Exception;

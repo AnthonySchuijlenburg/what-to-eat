@@ -2,7 +2,7 @@
 
 namespace Feature\Console;
 
-use App\Jobs\FetchSitemap;
+use App\Jobs\FetchSitemapJob;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -17,6 +17,6 @@ class FetchSitemapTest extends TestCase
         $this->artisan('fetch-sitemap');
 
         // Assert
-        Queue::assertPushed(FetchSitemap::class);
+        Queue::assertPushed(FetchSitemapJob::class);
     }
 }

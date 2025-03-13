@@ -3,28 +3,20 @@
 namespace App\Jobs;
 
 use App\Exceptions\NotFoundException;
-use App\Models\RecipeResult;
-use App\Services\BrowserService;
 use App\Services\SitemapService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Carbon;
 
-class FetchSitemap implements ShouldQueue
+class FetchSitemapJob implements ShouldQueue
 {
     use Queueable;
-
-    private SitemapService $sitemapService;
 
     /**
      * Create a new job instance.
      */
-    public function __construct()
-    {
-        $this->sitemapService = new SitemapService(
-            new BrowserService(),
-        );
-    }
+    public function __construct(
+        private readonly SitemapService $sitemapService
+    ) {}
 
     /**
      * Execute the job.
@@ -38,7 +30,7 @@ class FetchSitemap implements ShouldQueue
             return;
         }
 
-        $links = $this->sitemapService->unpackSitemapAndScheduleJobs($sitemap);
+        $links = $this->sitemapService->unpackSitemapAndReturnLocations($sitemap);
 
         foreach ($links as $link => $lastChange) {
             $this->sitemapService->handleSitemapLocation($link, $lastChange);

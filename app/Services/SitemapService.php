@@ -3,55 +3,43 @@
 namespace App\Services;
 
 use App\Exceptions\NotFoundException;
-use App\Jobs\ScrapeRecipe;
+use App\Jobs\ScrapeRecipeJob;
 
-class SitemapService
+readonly class SitemapService
 {
     public function __construct(
-        private readonly BrowserService $browserService
-    )
-    {}
-
+        private BrowserService $browserService
+    ) {}
 
     /**
-     * @throws NotFoundException when the sitemap returns an unsuccessful response
      * @return string The content of the sitemap
+     *
+     * @throws NotFoundException when the sitemap returns an unsuccessful response
      */
     public function fetchSitemap(): string
     {
         $url = config('app.recipes_source_base_url').'/sitemap.xml';
         $result = $this->browserService->makeRequest('GET', $url);
 
-        if (200 !== $result->getStatusCode()) {
-            throw new NotFoundException();
+        if ($result->getStatusCode() !== 200) {
+            throw new NotFoundException;
         }
 
         return $result->getContent();
     }
 
     /**
-     * @param string $sitemap
      * @return array<string, string>
      */
-    public function unpackSitemapAndScheduleJobs(string $sitemap): array
+    public function unpackSitemapAndReturnLocations(string $sitemap): array
     {
-        $pattern = '/<url>(.*?)<\/url>/s';
-
-        if (! preg_match_all($pattern, $sitemap, $matches)) {
-            return [];
-        }
+        $pattern = '/<url>.*?<loc>(?<url>.*?\/recepten\/gezond-recept\/.*?)<\/loc>.*?<lastmod>(?<lastmod>.*?)<\/lastmod>.*?<\/url>/s';
+        $matchCount = preg_match_all($pattern, $sitemap, $matches);
 
         $links = [];
 
-        foreach ($matches[1] as $loc) {
-            preg_match('/<loc>(.*?)<\/loc>/', $loc, $link);
-            preg_match('/<lastmod>(.*?)<\/lastmod>/', $loc, $lastModification);
-
-            if (! $link || ! $lastModification || ! str_contains($link[1], '/recepten/gezond-recept/')) {
-                continue;
-            }
-
-            $links[trim($link[1])] = trim($lastModification[1]);
+        for ($i = 0; $i < $matchCount; $i++) {
+            $links[$matches['url'][$i]] = $matches['lastmod'][$i];
         }
 
         return $links;
@@ -59,7 +47,6 @@ class SitemapService
 
     public function handleSitemapLocation(string $link, string $lastChange): void
     {
-        dd($link, $lastChange);
-        ScrapeRecipe::dispatch($link, $lastChange);
+        ScrapeRecipeJob::dispatch($link, $lastChange);
     }
 }
