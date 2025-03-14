@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RecipeResource\Pages;
 use App\Filament\Resources\RecipeResource\RelationManagers\IngredientsRelationManager;
+use App\Filament\Resources\RecipeResource\RelationManagers\RecipeResultsRelationManager;
 use App\Models\Recipe;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -128,6 +129,7 @@ class RecipeResource extends Resource
     {
         return [
             IngredientsRelationManager::class,
+            RecipeResultsRelationManager::class,
         ];
     }
 
