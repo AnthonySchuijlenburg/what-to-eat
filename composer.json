@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.9",
         "league/flysystem-aws-s3-v3": "^3.0",
         "pxlrbt/filament-environment-indicator": "^2.1",
+        "sentry/sentry-laravel": "^4.13",
         "shuvroroy/filament-spatie-laravel-backup": "^2.2",
         "spatie/laravel-backup": "^9.2",
         "symfony/browser-kit": "^7.2",
