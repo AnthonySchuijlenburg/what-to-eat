@@ -6,7 +6,6 @@ use App\Models\Recipe;
 use App\Models\RecipeResult;
 use App\Services\BrowserService;
 use Carbon\Carbon;
-use Cloudstudio\Ollama\Facades\Ollama;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -146,49 +145,6 @@ class ScrapeRecipeJob implements ShouldQueue
         return array_map(function ($ingredient) {
             return [
                 'source' => trim($ingredient->textContent),
-                'name' => trim($ingredient->textContent),
-                'amount_in_grams' => 0,
-            ];
-        }, iterator_to_array($crawler));
-
-        return array_map(function ($ingredient) {
-            $ingredient = trim($ingredient->textContent);
-
-            $response = Ollama::options([
-                'num_thread' => 2,
-                'temperature' => 0.4,
-            ])
-                ->tools([
-                    [
-                        'type' => 'function',
-                        'function' => [
-                            'name' => 'convert_to_grams',
-                            'description' => 'Given a required ingredient for a recipe, this function returns the name of that ingredient and the amount of grams is needed of it.',
-                            'parameters' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'ingredient' => [
-                                        'type' => 'string',
-                                        'description' => 'The name of the ingredient provided without the amount.',
-                                    ],
-                                    'amount' => [
-                                        'type' => 'number',
-                                        'description' => 'A number of grams needed of the provided ingredient, e.g. 10, 500, 40. When no amount of grams is provided guess how much of it based on common sense e.g. an egg weighs 55 grams',
-                                    ],
-                                ],
-                                'required' => ['ingredient', 'amount'],
-                            ],
-                        ],
-                    ],
-                ])
-                ->chat([
-                    ['role' => 'user', 'content' => $ingredient],
-                ]);
-
-            return [
-                'source' => $ingredient,
-                'name' => $response['message']['tool_calls'][0]['function']['arguments']['ingredient'],
-                'amount_in_grams' => (float) $response['message']['tool_calls'][0]['function']['arguments']['amount'],
             ];
         }, iterator_to_array($crawler));
     }
