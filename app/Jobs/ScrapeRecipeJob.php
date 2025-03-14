@@ -25,10 +25,10 @@ class ScrapeRecipeJob implements ShouldQueue
     public function __construct(
         private readonly string $sourceUrl,
         private readonly string $lastModification,
-        BrowserService $browserService = null,
+        ?BrowserService $browserService = null,
     ) {
-        if(null === $browserService) {
-            $this->browserService = new BrowserService();
+        if ($browserService === null) {
+            $this->browserService = new BrowserService;
         }
     }
 
@@ -147,8 +147,8 @@ class ScrapeRecipeJob implements ShouldQueue
         try {
             $image_url = $crawler->filter('[itemprop^="image"]')->attr('src', '');
 
-            if (null === $image_url || '' === $image_url) {
-                Throw new Exception('Image URL is empty');
+            if ($image_url === null || $image_url === '') {
+                throw new Exception('Image URL is empty');
             }
 
             $imageContent = file_get_contents($image_url);
