@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\Console;
+namespace Tests\Feature\Console;
 
 use App\Jobs\FetchSitemapJob;
 use Illuminate\Support\Facades\Queue;

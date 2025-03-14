@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\Jobs;
+namespace Tests\Feature\Jobs;
 
 use App\Jobs\FetchSitemapJob;
 use App\Jobs\ScrapeRecipeJob;
