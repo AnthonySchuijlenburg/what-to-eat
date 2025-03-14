@@ -27,9 +27,7 @@ class ScrapeRecipeJob implements ShouldQueue
         private readonly string $lastModification,
         ?BrowserService $browserService = null,
     ) {
-        if ($browserService === null) {
-            $this->browserService = new BrowserService;
-        }
+        $this->browserService = $browserService ?? new BrowserService;
     }
 
     public function handle(): void
