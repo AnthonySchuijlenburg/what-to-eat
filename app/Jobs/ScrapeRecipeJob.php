@@ -71,43 +71,14 @@ class ScrapeRecipeJob implements ShouldQueue
 
         $recipe = new Recipe([
             'name' => $crawler->filter('h1')->text(),
-            'serves' => 'Onbekend',
-            'preparation_time' => 'Onbekend',
-            'course' => 'Onbekend',
-            'nutritional_value' => 'Onbekend',
+            'description' => $this->tryToGetAttribute($crawler, '[itemprop^="description"]'),
+            'serves' => $this->tryToGetAttribute($crawler, '[itemprop^="recipeYield"]'),
+            'preparation_time' => $this->tryToGetAttribute($crawler, '[itemprop^="totalTime"]'),
+            'course' => $this->tryToGetAttribute($crawler, '[itemprop^="recipeCategory"]'),
+            'nutritional_value' => $this->tryToGetAttribute($crawler, '[itemprop^="recipeCalories"]'),
             'image_url' => '',
             'source_url' => $this->sourceUrl,
         ]);
-
-        try {
-            $recipe->description = $crawler->filter('[itemprop^="description"]')->text();
-        } catch (Exception $exception) {
-            // do nothing
-        }
-
-        try {
-            $recipe->serves = $crawler->filter('[itemprop^="recipeYield"]')->text();
-        } catch (Exception $exception) {
-            // do nothing
-        }
-
-        try {
-            $recipe->preparation_time = $crawler->filter('[itemprop^="totalTime"]')->text();
-        } catch (Exception $exception) {
-            // do nothing
-        }
-
-        try {
-            $recipe->course = $crawler->filter('[itemprop^="recipeCategory"]')->text();
-        } catch (Exception $exception) {
-            // do nothing
-        }
-
-        try {
-            $recipe->nutritional_value = $crawler->filter('[itemprop^="recipeCalories"]')->text();
-        } catch (Exception $exception) {
-            // do nothing
-        }
 
         $previousRecipe = Recipe::query()
             ->where('source_url', $this->sourceUrl)
@@ -159,6 +130,15 @@ class ScrapeRecipeJob implements ShouldQueue
         }
 
         return $recipe;
+    }
+
+    private function tryToGetAttribute(Crawler $crawler, string $query): string
+    {
+        try {
+            return $crawler->filter($query)->text();
+        } catch (Exception $exception) {
+            return 'Onbekend';
+        }
     }
 
     private function extractIngredients(Crawler $crawler): array
