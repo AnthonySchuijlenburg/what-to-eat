@@ -21,9 +21,12 @@ class RecipeFactory extends Factory
             'name' => fake()->sentence(),
             'description' => fake()->sentences(fake()->numberBetween(2, 6), true),
             'steps' => fake()->sentences(fake()->numberBetween(5, 10)),
-            'variable_size' => $variable = fake()->boolean(),
-            'serves' => $variable ? 1 : fake()->numberBetween(2, 10),
+            'serves' => fake()->numberBetween(2, 10),
+            'preparation_time' => fake()->numberBetween(10, 60).' minutes',
+            'course' => fake()->randomElement(['starter', 'main', 'dessert']),
+            'nutritional_value' => fake()->numberBetween(100, 500).' Kcal',
             'image_url' => fake()->imageUrl(),
+            'source_url' => fake()->url(),
         ];
     }
 

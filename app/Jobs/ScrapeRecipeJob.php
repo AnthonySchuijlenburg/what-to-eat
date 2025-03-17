@@ -85,6 +85,8 @@ class ScrapeRecipeJob implements ShouldQueue
 
         if ($previousRecipe !== null) {
             $recipe->id = $previousRecipe->id;
+            $recipe->exists = true;
+            $recipe->wasRecentlyCreated = true;
         }
 
         $steps = [];

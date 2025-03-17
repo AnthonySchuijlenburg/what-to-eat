@@ -6,6 +6,7 @@ use App\Jobs\ScrapeRecipeJob;
 use App\Models\Recipe;
 use App\Models\RecipeResult;
 use App\Services\BrowserService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\BrowserKit\Response;
 use Tests\TestCase;
@@ -112,5 +113,38 @@ class ScrapeRecipeJobTest extends TestCase
         // Assert
         $result = Recipe::with('ingredients')->latest()->first();
         $this->assertInstanceOf(Recipe::class, $result);
+    }
+
+    public function test_it_should_create_a_recipe_from_a_result_newer_result(): void
+    {
+        // Arrange
+        $content = File::get(storage_path('RecipePages/recipe_1.html'));
+        $statusCode = 200;
+
+        $browserService = $this->createMock(BrowserService::class);
+        $browserService
+            ->expects($this->once())
+            ->method('makeRequest')
+            ->willReturn(new Response($content, $statusCode));
+
+        RecipeResult::factory()->macaroni()->create();
+        $oldRecipe = Recipe::factory()->create([
+            'created_at' => '01-01-2022',
+            'updated_at' => '01-01-2022',
+        ]);
+
+        $job = new ScrapeRecipeJob(
+            $oldRecipe->source_url,
+            '01-01-2025',
+        );
+
+        // Act
+        $job->handle($browserService);
+
+        // Assert
+        $result = Recipe::with('ingredients')->latest()->first();
+        $this->assertInstanceOf(Recipe::class, $result);
+        $this->assertTrue((new Carbon($result->updated_at))->isCurrentDay());
+        $this->assertDatabaseCount('recipe_results', 2);
     }
 }
