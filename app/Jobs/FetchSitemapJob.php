@@ -12,28 +12,22 @@ class FetchSitemapJob implements ShouldQueue
     use Queueable;
 
     /**
-     * Create a new job instance.
-     */
-    public function __construct(
-        private readonly SitemapService $sitemapService
-    ) {}
-
-    /**
      * Execute the job.
      */
-    public function handle(): void
-    {
+    public function handle(
+        SitemapService $sitemapService
+    ): void {
         try {
-            $sitemap = $this->sitemapService->fetchSitemap();
+            $sitemap = $sitemapService->fetchSitemap();
         } catch (NotFoundException $exception) {
             // Retry the job at a later time
             return;
         }
 
-        $links = $this->sitemapService->unpackSitemapAndReturnLocations($sitemap);
+        $links = $sitemapService->unpackSitemapAndReturnLocations($sitemap);
 
         foreach ($links as $link => $lastChange) {
-            $this->sitemapService->handleSitemapLocation($link, $lastChange);
+            $sitemapService->handleSitemapLocation($link, $lastChange);
         }
     }
 }

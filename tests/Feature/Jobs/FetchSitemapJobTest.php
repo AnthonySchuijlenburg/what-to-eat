@@ -31,10 +31,10 @@ class FetchSitemapJobTest extends TestCase
             ->method('makeRequest')
             ->willReturn(new Response($content, $statusCode));
 
-        $job = new FetchSitemapJob(new SitemapService($browserService));
+        $job = new FetchSitemapJob;
 
         // Act
-        $job->handle();
+        $job->handle(new SitemapService($browserService));
 
         // Assert
         Queue::assertNotPushed(ScrapeRecipeJob::class);
@@ -64,10 +64,10 @@ class FetchSitemapJobTest extends TestCase
             ->method('makeRequest')
             ->willReturn(new Response($content, $statusCode));
 
-        $job = new FetchSitemapJob(new SitemapService($browserService));
+        $job = new FetchSitemapJob;
 
         // Act
-        $job->handle();
+        $job->handle(new SitemapService($browserService));
 
         // Assert
         Queue::assertNotPushed(ScrapeRecipeJob::class);
@@ -97,10 +97,10 @@ class FetchSitemapJobTest extends TestCase
             ->method('makeRequest')
             ->willReturn(new Response($content, $statusCode));
 
-        $job = new FetchSitemapJob(new SitemapService($browserService));
+        $job = new FetchSitemapJob;
 
         // Act
-        $job->handle();
+        $job->handle(new SitemapService($browserService));
 
         // Assert
         Queue::assertPushed(ScrapeRecipeJob::class, 1);

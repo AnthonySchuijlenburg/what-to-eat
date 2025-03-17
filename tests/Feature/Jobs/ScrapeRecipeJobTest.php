@@ -27,11 +27,10 @@ class ScrapeRecipeJobTest extends TestCase
         $job = new ScrapeRecipeJob(
             '',
             '',
-            $browserService,
         );
 
         // Act
-        $job->handle();
+        $job->handle($browserService);
 
         // Assert
         $result = RecipeResult::all()->first();
@@ -55,11 +54,10 @@ class ScrapeRecipeJobTest extends TestCase
         $job = new ScrapeRecipeJob(
             '',
             '',
-            $browserService,
         );
 
         // Act
-        $job->handle();
+        $job->handle($browserService);
 
         // Assert
         $result = RecipeResult::all()->first();
@@ -82,11 +80,10 @@ class ScrapeRecipeJobTest extends TestCase
         $job = new ScrapeRecipeJob(
             $recipeResult->url,
             '01-01-2020',
-            $browserService,
         );
 
         // Act
-        $job->handle();
+        $job->handle($browserService);
 
         // Assert
         $this->assertDatabaseCount('recipe_results', 1);
@@ -107,11 +104,10 @@ class ScrapeRecipeJobTest extends TestCase
         $job = new ScrapeRecipeJob(
             '',
             '',
-            $browserService,
         );
 
         // Act
-        $job->handle();
+        $job->handle($browserService);
 
         // Assert
         $result = Recipe::with('ingredients')->latest()->first();

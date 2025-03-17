@@ -24,13 +24,13 @@ class ScrapeRecipeJob implements ShouldQueue
     public function __construct(
         private readonly string $sourceUrl,
         private readonly string $lastModification,
-        ?BrowserService $browserService = null,
-    ) {
-        $this->browserService = $browserService ?? new BrowserService;
-    }
+    ) {}
 
-    public function handle(): void
-    {
+    public function handle(
+        BrowserService $browserService
+    ): void {
+        $this->browserService = $browserService;
+
         $recipeResult = RecipeResult::query()
             ->where('url', $this->sourceUrl)
             ->latest()
