@@ -11,6 +11,8 @@ class FetchSitemapJob implements ShouldQueue
 {
     use Queueable;
 
+    public function __construct() {}
+
     /**
      * Execute the job.
      */

@@ -29,7 +29,7 @@ class RecipeResultsRelationManager extends RelationManager
             ->recordTitleAttribute('')
             ->columns([
                 Tables\Columns\TextColumn::make('result')
-                    ->formatStateUsing(fn (string $state): string => strlen($state)),
+                    ->formatStateUsing(fn (string $state): int => strlen($state)),
                 Tables\Columns\TextColumn::make('status_code'),
                 Tables\Columns\TextColumn::make('updated_at'),
                 Tables\Columns\TextColumn::make('created_at'),
