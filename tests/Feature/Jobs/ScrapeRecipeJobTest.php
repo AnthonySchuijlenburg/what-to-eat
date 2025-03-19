@@ -43,7 +43,7 @@ class ScrapeRecipeJobTest extends TestCase
     public function test_it_should_create_a_recipe_result_on_a_unsuccessful_scrape(): void
     {
         // Arrange
-        $content = '<body><h1>Hello World!</h1></body>';
+        $content = '<body><h1>Hello World!</h1><a href="'.ScrapeRecipeJob::NOT_FOUND_URL.'"></a></body>';
         $statusCode = 404;
 
         $browserService = $this->createMock(BrowserService::class);

@@ -16,6 +16,8 @@ class ScrapeRecipeJob implements ShouldQueue
 {
     use Queueable;
 
+    public const string NOT_FOUND_URL = 'https://mobiel.voedingscentrum.nl/nl/404.aspx';
+
     private BrowserService $browserService;
 
     /**
@@ -57,9 +59,11 @@ class ScrapeRecipeJob implements ShouldQueue
     {
         $result = $this->browserService->makeRequest('GET', $this->sourceUrl);
 
+        $statusCode = str_contains($result->getContent(), self::NOT_FOUND_URL) ? 404 : 200;
+
         return RecipeResult::query()->create([
             'url' => $this->sourceUrl,
-            'status_code' => $result->getStatusCode(),
+            'status_code' => $statusCode,
             'result' => $result->getContent(),
         ]);
     }
