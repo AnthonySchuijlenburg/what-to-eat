@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilterItem from "./FilterItem.vue";
+import IngredientList from "./IngredientList.vue";
 
 interface Props {
     request: object;
@@ -14,6 +15,8 @@ defineProps<Props>();
 <template>
     <form class="w-full h-fit mb-4 flex flex-col items-start border rounded p-4">
         <h2 class="text-2xl">Filters</h2>
+
+        <IngredientList :request="request" />
 
         <FilterItem
             :request="request"
