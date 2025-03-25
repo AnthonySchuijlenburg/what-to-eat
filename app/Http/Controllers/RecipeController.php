@@ -3,18 +3,43 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recipe;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class RecipeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): View|Factory|Application
+    public function index(Request $request): Response
     {
+        return Inertia::render('Recipes/Index', [
+            'recipes' => Inertia::defer(fn () => $this->getRecipes(), 'recipes'),
+            'ingredientsToMatch' => fn () => $request['ingredients'] ?? [],
+            'request' => $request,
+            'courseFilters' => fn () => $this->getCourses(),
+            'preparationTimeFilters' => fn () => $this->getPrepTimes(),
+            'servingSizeFilters' => fn () => $this->getServings(),
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id): Response
+    {
+        $recipe = Recipe::query()
+            ->where('id', $id)
+            ->first();
+
+        return Inertia::render('Recipes/Show', ['recipe' => $recipe]);
+    }
+
+    private function getRecipes(): Collection
+    {
+        $request = request();
         $name = $request->input('name');
         $course = $request->input('course');
         $preparationTime = $request->input('preparation_time');
@@ -22,7 +47,7 @@ class RecipeController extends Controller
 
         $ingredients = $request->input('ingredients', []);
 
-        $recipes = Recipe::query()
+        return Recipe::query()
             ->when($name, function ($query) use ($name) {
                 return $query->where('name', 'like', '%'.$name.'%');
             })
@@ -52,27 +77,6 @@ class RecipeController extends Controller
             ->with('ingredients')
             ->latest()
             ->get();
-
-        return view('recipes.index', [
-            'recipes' => $recipes,
-            'filters' => [
-                'courses' => $this->getCourses(),
-                'preparation_times' => $this->getPrepTimes(),
-                'serves' => $this->getServings(),
-            ],
-        ]);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id): View|Factory|Application
-    {
-        $recipe = Recipe::query()
-            ->where('id', $id)
-            ->first();
-
-        return view('recipes.show', ['recipe' => $recipe]);
     }
 
     private function getPrepTimes(): array
