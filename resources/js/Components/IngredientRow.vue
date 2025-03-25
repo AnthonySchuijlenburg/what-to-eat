@@ -9,7 +9,7 @@ const props = defineProps<Props>();
 
 const match = computed<boolean>(function() {
     for (const ingredient of props.ingredientsToMatch) {
-        if (props.ingredient.source.includes(ingredient)) {
+        if (props.ingredient.source.toLowerCase().includes(ingredient.toLowerCase())) {
             return true
         }
     }

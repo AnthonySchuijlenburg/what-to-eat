@@ -54,7 +54,7 @@ defineProps<Props>();
                         v-for="recipe in recipes"
                         :key="recipe.id"
                         :recipe="recipe"
-                        :ingredients-to-match="[]"
+                        :ingredients-to-match="ingredientsToMatch"
                     />
                     <h2 v-if="recipes.length === 0">No Recipes</h2>
                 </Deferred>
