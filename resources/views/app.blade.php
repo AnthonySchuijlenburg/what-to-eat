@@ -8,7 +8,7 @@
     @vite('resources/css/app.css')
     @inertiaHead
 </head>
-<body class="antialiased container mx-auto mt-10 mb-10 max-w-8xl">
+<body class="antialiased container mx-auto mt-10 mb-10 max-w-8xl p-4">
 @inertia
 </body>
 </html>
